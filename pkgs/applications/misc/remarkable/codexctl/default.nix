@@ -165,7 +165,6 @@ in buildPythonApplication rec {
   propagatedBuildInputs = with python.pkgs; [
     ((paramiko.override { inherit cryptography; }).overridePythonAttrs (prev: rec {
       version = "3.4.1";
-      doCheck = false; # TODO: Figure out why tests are failing
       src = fetchPypi {
         inherit (prev) pname;
         inherit version;

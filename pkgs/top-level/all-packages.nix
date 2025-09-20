@@ -2537,6 +2537,8 @@ with pkgs;
 
   remarkable-mouse = python3Packages.callPackage ../applications/misc/remarkable/remarkable-mouse { };
 
+  codexctl = python3Packages.callPackage ../applications/misc/remarkable/codexctl { };
+
   ropgadget = with python3Packages; toPythonApplication ropgadget;
 
   scour = with python3Packages; toPythonApplication scour;

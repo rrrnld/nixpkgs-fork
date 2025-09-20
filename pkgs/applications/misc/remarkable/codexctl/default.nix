@@ -1,6 +1,10 @@
-{ lib, buildPythonApplication, buildPythonPackage, callPackage, fetchPypi, fetchFromGitHub, python, rustPlatform, gnumake }:
+{ lib, buildPythonApplication, buildPythonPackage, callPackage, fetchPypi, fetchFromGitHub, python, rustPlatform, protobuf_27 }:
 
 let
+  protobuf = (protobuf_27.override {
+    version = "27.3";
+    hash = "sha256-JZtRNGjAns1VJ+0831AzgOaBQkHAnnLxeXs4SoXlXpE=";
+  });
   python-ext4 = buildPythonPackage rec {
     pname = "python-ext4";
     version = "1.0.6";
@@ -64,10 +68,10 @@ let
         hash = "sha256-hjfSjmwd/mylVZKyXsj/pP2KvAGDpfthuT+w219HAiA=";
       };
     }));
-  remarkable-update-image = buildPythonPackage rec {
+    remarkable-update-image = buildPythonPackage rec {
     pname = "remarkable-update-image";
     version = "1.1.5";
-    format = "other";
+    format = "pyproject";
     src = fetchFromGitHub {
       owner = "Eeems";
       repo = pname;
@@ -75,16 +79,30 @@ let
       hash = "sha256-nnKJYFMvcArmQFxqx+DsTY9iMJp6rffNtCOST+I6L+g=";
     };
 
-    installPhase = ''
-      make executable
+    patches = [ ./remarkable_update_image.patch ];
+
+    buildPhase = ''
+      runHook pypaBuildPhase
+
+      ${protobuf}/bin/protoc \
+        --python_out=remarkable_update_image \
+        --proto_path=protobuf \
+        update_metadata.proto
+    '';
+
+    postInstall = ''
+      mkdir -p $out/lib/python${lib.versions.majorMinor python.version}/site-packages/
+      ls -la */*
+      cp -r remarkable_update_image/* $out/lib/python${lib.versions.majorMinor python.version}/site-packages/remarkable_update_image/
     '';
 
     nativeBuildInputs = [
-      gnumake
       python.pkgs.wheel
+      python.pkgs.setuptools
       python.pkgs.setuptools-scm
       python.pkgs.nuitka
     ];
+
     propagatedBuildInputs = with python.pkgs; [
       cryptography
       (protobuf5.overridePythonAttrs (prev: rec {
@@ -110,7 +128,7 @@ let
   remarkable-update-fuse = buildPythonPackage rec {
     pname = "remarkable-update-fuse";
     version = "1.2.4";
-    format = "wheel";
+    format = "pyproject";
     src = fetchFromGitHub {
       owner = "Eeems-Org";
       repo = pname;
@@ -118,6 +136,8 @@ let
       hash = "sha256-mARurPYeVwtHGZ2W0+FOLCBd9lx3eB6jdz0RQ+mJ2UY=";
     };
     nativeBuildInputs = [
+      python.pkgs.wheel
+      python.pkgs.setuptools
       python.pkgs.setuptools-scm
       python.pkgs.nuitka
     ];
@@ -175,7 +195,14 @@ in buildPythonApplication rec {
         hash = "sha256-j6rk8xC22Wn6JsoFRTOLIfc8axXbfEqNk0pUgvqoGPI=";
       };
     }))
-    requests
+    (requests.overridePythonAttrs (prev: rec {
+      version = "2.32.4";
+      src = fetchPypi {
+        inherit (prev) pname;
+        inherit version;
+        hash = "sha256-J9AxZoLIopg00yZIIAJLYqNpQgg9Usry8UwFkTNtNCI=";
+      };
+    }))
     loguru
     remarkable-update-image
     remarkable-update-fuse

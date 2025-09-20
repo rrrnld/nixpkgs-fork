@@ -91,8 +91,6 @@ let
     '';
 
     postInstall = ''
-      mkdir -p $out/lib/python${lib.versions.majorMinor python.version}/site-packages/
-      ls -la */*
       cp -r remarkable_update_image/* $out/lib/python${lib.versions.majorMinor python.version}/site-packages/remarkable_update_image/
     '';
 

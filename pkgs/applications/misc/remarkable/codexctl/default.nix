@@ -162,20 +162,6 @@ in buildPythonApplication rec {
     python.pkgs.poetry-core
   ];
 
-  # installPhase = ''
-  #   runHook preInstall
-
-  #   mkdir -p $out/share/codexctl
-  #   cp codexctl.py $out/share/codexctl
-  #   cp -r modules/ $out/share/codexctl
-
-  #   makeWrapper ${python}/bin/python $out/bin/codexctl \
-  #     --set PYTHONPATH "$PYTHONPATH" \
-  #     --add-flags "-O $out/share/codexctl/codexctl.py"
-
-  #   runHook postInstall
-  # '';
-
   propagatedBuildInputs = with python.pkgs; [
     ((paramiko.override { inherit cryptography; }).overridePythonAttrs (prev: rec {
       version = "3.4.1";
